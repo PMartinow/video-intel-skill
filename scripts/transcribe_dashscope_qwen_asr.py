@@ -111,17 +111,21 @@ def main() -> int:
     })
 
     endpoint = args.base_url.rstrip("/") + "/chat/completions"
-    response = request_json(
-        endpoint,
-        api_key,
-        {
-            "model": args.model,
-            "messages": messages,
-            "stream": False,
-            "asr_options": asr_options,
-        },
-        args.timeout,
-    )
+    try:
+        response = request_json(
+            endpoint,
+            api_key,
+            {
+                "model": args.model,
+                "messages": messages,
+                "stream": False,
+                "asr_options": asr_options,
+            },
+            args.timeout,
+        )
+    except RuntimeError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
     print(json.dumps(extract_result(response), indent=2, ensure_ascii=False))
     return 0
 
