@@ -1,6 +1,6 @@
 ---
 name: video-intel
-description: Analyze videos by extracting audio, transcribing speech with a configured speech-to-text backend such as Alibaba Cloud Model Studio Qwen-ASR, sampling and optionally preserving representative frames, visually inspecting those frames, returning content analysis in chat, supporting post-analysis Q&A with online research, and optionally creating Markdown insight/transcript/frame-analysis/research documents when requested. Use when the user asks what a video is about, wants a video summary, scene breakdown, spoken-content summary, visual-content analysis, frame-by-frame analysis, combined audio/video understanding, post-analysis Q&A about the video's subject, or analysis artifacts for local video files such as .mp4, .mov, .mkv, .webm, .avi, or screen recordings.
+description: Analyze videos by extracting audio, transcribing speech with a configured speech-to-text backend such as ElevenLabs Scribe or Alibaba Cloud Model Studio Qwen-ASR, sampling and optionally preserving representative frames, visually inspecting those frames, returning content analysis in chat, supporting post-analysis Q&A with online research, and optionally creating Markdown insight/transcript/frame-analysis/research documents when requested. Use when the user asks what a video is about, wants a video summary, scene breakdown, spoken-content summary, visual-content analysis, frame-by-frame analysis, combined audio/video understanding, post-analysis Q&A about the video's subject, or analysis artifacts for local video files such as .mp4, .mov, .mkv, .webm, .avi, or screen recordings.
 ---
 
 # Video Intel
@@ -17,7 +17,14 @@ Use this skill to understand a local video by combining transcript evidence with
    ```
 
    The script creates a temp folder, extracts canonical audio at 48 kHz mono WAV, creates a compact `audio-asr.mp3` for cloud ASR, samples frames, and prints JSON containing the generated paths.
-3. Transcribe the extracted `asr_audio.path` with the configured speech-to-text backend when available. Prefer Alibaba Cloud Model Studio Qwen-ASR when `DASHSCOPE_API_KEY` or `ALIBABA_API_KEY` is set:
+3. Transcribe the extracted `asr_audio.path` with the configured speech-to-text backend when available. Prefer ElevenLabs Scribe when `ELEVENLABS_API_KEY` is set:
+
+   ```bash
+   read -rsp "ELEVENLABS_API_KEY: " ELEVENLABS_API_KEY; export ELEVENLABS_API_KEY; echo
+   python3 scripts/transcribe_elevenlabs_scribe.py --language en /tmp/video-intel-.../audio-asr.mp3
+   ```
+
+   Use Alibaba Cloud Model Studio Qwen-ASR when `DASHSCOPE_API_KEY` or `ALIBABA_API_KEY` is set:
 
    ```bash
    read -rsp "DASHSCOPE_API_KEY: " DASHSCOPE_API_KEY; export DASHSCOPE_API_KEY; echo
@@ -26,7 +33,7 @@ Use this skill to understand a local video by combining transcript evidence with
    python3 scripts/transcribe_dashscope_qwen_asr.py /tmp/video-intel-.../audio-asr.mp3
    ```
 
-   The helper uses the OpenAI-compatible `qwen3-asr-flash` path and prints sanitized JSON with `text`, `annotations`, and `usage`. Audio larger than the helper's size limit should be compressed further, hosted at a public URL, or routed through an asynchronous ASR workflow. Never print API keys, bearer tokens, certificate contents, private keys, device codes, encoded audio payloads, or the contents of `.env`. If transcription is unavailable, report that transcript evidence is unavailable and continue with visual analysis rather than fabricating speech.
+   The helpers print sanitized JSON with transcript text and provider metadata. The ElevenLabs helper uses `scribe_v2` by default and includes word-level timestamps when returned. The DashScope helper uses the OpenAI-compatible `qwen3-asr-flash` path and includes `annotations` and `usage` when returned. Audio larger than a helper's size limit should be compressed further, hosted at a public URL, or routed through an asynchronous ASR workflow. Never print API keys, bearer tokens, certificate contents, private keys, device codes, encoded audio payloads, or the contents of `.env`. If transcription is unavailable, report that transcript evidence is unavailable and continue with visual analysis rather than fabricating speech.
 4. Inspect sampled frames with `view_image`. Prefer all frames for short videos and a representative subset for long or repetitive videos. Use frame timestamps from the script output when describing the timeline.
 5. If transcription is still running and the user asks for more confidence, sample more frames or create a contact sheet instead of starting another transcription request.
 6. Synthesize the video meaning from both channels. Treat transcript and visuals as separate evidence streams; call out conflicts, unclear audio, missing speech, black frames, slides, UI screens, or repeated scenes.
