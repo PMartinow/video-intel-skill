@@ -1,0 +1,4 @@
+interface:
+  display_name: "Video Intel"
+  short_description: "Analyze video audio and visual content"
+  default_prompt: "Use $video-intel to summarize what this video is about."

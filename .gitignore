@@ -1,0 +1,25 @@
+.env
+.env.*
+!.env.example
+__pycache__/
+*.py[cod]
+.DS_Store
+
+# Local analysis outputs
+video-intel-*/
+outputs/
+artifacts/
+frames/
+*.mp4
+*.mov
+*.mkv
+*.webm
+*.avi
+*.wav
+*.mp3
+*.m4a
+*.aac
+transcription.md
+frame-analysis.md
+insights.md
+research.md
